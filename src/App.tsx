@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useHandTracking } from './hooks/useHandTracking';
 import FlowerCanvas from './components/FlowerCanvas';
 import { FLOWER_TYPES } from './utils/flowerSprites';

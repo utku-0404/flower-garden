@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef, RefObject } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import type { RefObject } from 'react';
 import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import type { NormalizedLandmark } from '@mediapipe/tasks-vision';
 
@@ -12,8 +13,8 @@ export interface TrackingRefs {
 }
 
 export function useHandTracking(
-  videoRef: RefObject<HTMLVideoElement>,
-  containerRef: RefObject<HTMLDivElement>,
+  videoRef: RefObject<HTMLVideoElement | null>,
+  containerRef: RefObject<HTMLDivElement | null>,
   enabled: boolean
 ) {
   // ── Low-frequency state (triggers re-renders, but only rarely) ──
