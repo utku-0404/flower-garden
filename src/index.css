@@ -1,0 +1,300 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0b0f0c; /* Very dark green/black like the original */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden; /* Prevent scrolling since it's a full-screen canvas app */
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  position: relative;
+}
+
+/* Base styles for the video/canvas container to ensure they perfectly overlap */
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.webcam-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Mirror the video feed horizontally */
+  transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+}
+
+.canvas-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Canvas needs to match the video's mirroring if we want coordinates to align perfectly
+     Wait, if we mirror the video visually, the MediaPipe coordinates will still be based on the unmirrored image unless we tell it.
+     Usually, it's easier to mirror the canvas as well.
+  */
+  pointer-events: none; /* Let clicks pass through if needed */
+  z-index: 10;
+}
+
+/* Beautiful loading UI */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(11, 15, 12, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+  transition: opacity 0.5s ease;
+}
+
+.loading-overlay h1 {
+  font-size: 2.5rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+  background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.loading-overlay p {
+  font-size: 1.2rem;
+  color: #a3b8aa;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.7; transform: scale(0.98); }
+}
+
+/* Instructions overlay */
+.instructions {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  z-index: 20;
+  pointer-events: none;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Welcome screen ─────────────────────────────────────────────── */
+.welcome-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 60% 40%, #1a0a2e 0%, #0b0f0c 70%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 3.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 180, 220, 0.18);
+  border-radius: 28px;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 8px 60px rgba(255, 100, 180, 0.12);
+}
+
+.welcome-emoji {
+  font-size: 4rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+.welcome-title {
+  margin: 0;
+  font-size: 2.8rem;
+  font-weight: 200;
+  letter-spacing: 6px;
+  background: linear-gradient(120deg, #ff9a9e, #fecfef, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-sub {
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 300;
+  letter-spacing: 0.5px;
+}
+
+.start-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0.5rem;
+  padding: 14px 36px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: linear-gradient(135deg, #e91e8c, #9c27b0);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 28px rgba(233, 30, 140, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 40px rgba(233, 30, 140, 0.65);
+  filter: brightness(1.1);
+}
+
+.start-btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 0 18px rgba(233, 30, 140, 0.4);
+}
+
+.start-btn-icon {
+  font-size: 1.2rem;
+}
+
+.welcome-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.3px;
+}
+
+/* ── Top Floating Flower Bar ───────────────────────────────────────── */
+.flower-bar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 18, 0.75);
+  backdrop-filter: blur(20px);
+  padding: 10px 16px 14px 16px;
+  border-radius: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  z-index: 30;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-width: 90vw;
+  width: auto;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  user-select: none;
+}
+
+/* Sleek subtle scrollbar for desktop & touch devices */
+.flower-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.flower-bar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  margin: 0 16px;
+}
+
+.flower-bar::-webkit-scrollbar-thumb {
+  background: rgba(255, 180, 220, 0.4);
+  border-radius: 4px;
+}
+
+.flower-bar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 180, 220, 0.7);
+}
+
+.flower-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.flower-chip:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.flower-chip.active {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 180, 220, 0.6);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 180, 220, 0.3);
+}
+
+.flower-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+}
+
+
+
